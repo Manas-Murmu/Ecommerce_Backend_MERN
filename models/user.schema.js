@@ -9,21 +9,21 @@ const userSchema = mongoose.Schema(
   {
     name: {
       type: String,
-      required: [true, "Name is Required"],
-      maxLength: [50, "Name must be less than 50 Chars"],
+      required: [true, "Name is required"],
+      maxLength: [50, "Name must be less than 50"],
     },
     email: {
       type: String,
-      required: [true, "Email is Required"],
+      required: [true, "Email is required"],
       unique: true,
     },
     password: {
       type: String,
-      required: [true, "Password is Required"],
-      minLength: [8, "Password shoud be atleast 8 Character"],
+      required: [true, "password is required"],
+      minLength: [8, "password must be at least 8 characters"],
       select: false,
     },
-    roles: {
+    role: {
       type: String,
       enum: Object.values(AuthRoles),
       default: AuthRoles.USER,
@@ -31,27 +31,27 @@ const userSchema = mongoose.Schema(
     forgotPasswordToken: String,
     forgotPasswordExpiry: Date,
   },
-  { timestamps: true }
+  {
+    timestamps: true,
+  }
 );
 
-//Encrypt Password
+// challenge 1 - encrypt password - hooks
 userSchema.pre("save", async function (next) {
-  if (!this.modified("password")) {
-    return next();
-  }
+  if (!this.isModified("password")) return next();
   this.password = await bcrypt.hash(this.password, 10);
   next();
 });
 
-//Add Features to Schema
+// add more featuers directly to your schema
 userSchema.methods = {
-  //Compare Password
+  //compare password
   comparePassword: async function (enteredPassword) {
     return await bcrypt.compare(enteredPassword, this.password);
   },
 
-  //Generate JWT TOKEN
-  getJwtToken: async function () {
+  //generate JWT TOKEN
+  getJwtToken: function () {
     return JWT.sign(
       {
         _id: this._id,
@@ -62,6 +62,21 @@ userSchema.methods = {
         expiresIn: config.JWT_EXPIRY,
       }
     );
+  },
+
+  generateForgotPasswordToken: function () {
+    const forgotToken = crypto.randomBytes(20).toString("hex");
+
+    //step 1 - save to DB
+    this.forgotPasswordToken = crypto
+      .createHash("sha256")
+      .update(forgotToken)
+      .digest("hex");
+
+    this.forgotPasswordExpiry = Date.now() + 20 * 60 * 1000;
+    //step 2 - return values to user
+
+    return forgotToken;
   },
 };
 
