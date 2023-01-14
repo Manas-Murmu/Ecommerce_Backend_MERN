@@ -11,6 +11,11 @@ const config = {
   SMTP_MAIL_USERNAME: process.emv.SMTP_MAIL_USERNAME,
   SMTP_MAIL_PASSWORD: process.emv.SMTP_MAIL_PASSWORD,
   SMTP_MAIL_EMAIL: process.emv.SMTP_MAIL_EMAIL,
+
+  S3_ACCESS_KEY: process.env.S3_ACCESS_KEY,
+  S3_SECRET_ACCESS_KEY: process.env.SECRET_ACCESS_KEY,
+  S3_BUCKET_NAME: process.env.S3_BUCKET_NAME,
+  S3_REGION: process.env.S3_REGION,
 };
 
 export default config;
